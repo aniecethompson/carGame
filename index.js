@@ -9,13 +9,22 @@ let keys = {
     ArrowLeft: false
 }
 
-let player = {speed:5}
+let player = {
+    speed:5,
+    score: 0
+}
 
-function playGame(e){
+startScreen.addEventListener("click", start)
+document.addEventListener("keydown", pressOn)
+document.addEventListener("keyup", pressOff)
+
+function playGame(){
     let car = document.querySelector(".car")
     moveLines()
+    moveEnemy(car)
     let road = gameArea.getBoundingClientRect()
-    
+   
+    // moves player's car if player.start equals true
     if(player.start){
         
         if(keys.ArrowUp && player.y < (road.height -150)){
@@ -35,15 +44,25 @@ function playGame(e){
         car.style.top = `${player.y}px`
 
         window.requestAnimationFrame(playGame)
+
+        // increase player score
+        player.score++
+        score.innerText = `Score: ${player.score}`
     }
     
 }
 
 function start(){
     startScreen.classList.add("hide")
-    gameArea.classList.remove("hide")
+    score.classList.remove("hide")
+    // clear board when game reset
+    gameArea.innerText = ""
+
     
     player.start = true
+    player.score = 0
+    
+    // create lines
     for(let i=0; i < 10; i++){
         let line = document.createElement("div")
         line.classList.add("line")
@@ -54,16 +73,33 @@ function start(){
     
     window.requestAnimationFrame(playGame)
     
+    // create player car
     let car = document.createElement("div")
-    
-    car.innerText = "car"
     car.setAttribute("class","car")
-    
     gameArea.appendChild(car)
     
     player.x =car.offsetLeft
     player.y =car.offsetTop
+ 
+    // create enemy cars
+    for(let i=0; i < 4; i++){
+        let enemyCar = document.createElement("div")
+        enemyCar.classList.add("enemy")
+        // creating random starting position of car
+        enemyCar.y = ((i+1)* 550) * -1
+        enemyCar.style.top = (`${enemyCar.y}px`)
+        enemyCar.style.left = Math.floor(Math.random()* 350) + "px"
+        enemyCar.innerText = `${i + 1}`
 
+        enemyCar.style.backgroundColor = randomColor()
+        gameArea.appendChild(enemyCar)
+    } 
+
+}
+
+const randomColor = () =>{
+    var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+    return randomColor;
 }
 
 const pressOn = (e) => {
@@ -80,13 +116,52 @@ const pressOff = (e) => {
 const moveLines = () => {
     let lines = document.querySelectorAll(".line")
     lines.forEach((item) => {
+        // check if line is off the screen, then reset line's position
         if(item.y > 1500){
             item.y -= 1500
         }
-        item.y += player.speed
+        item.y += player.speed 
         item.style.top = `${item.y}px`
     })
 }
-startScreen.addEventListener("click", start)
-document.addEventListener("keydown", pressOn)
-document.addEventListener("keyup", pressOff)
+
+const moveEnemy = (car) => {
+    let enemyCar = document.querySelectorAll(".enemy")
+    enemyCar.forEach((enemy) => {
+        // send to end the game function
+        if(isCollide(car, enemy)){
+            endGame()
+        }
+
+        // if enemy car has run off the screen the reset the position
+        if(enemy.y >= 1500){
+            enemy.y = -600
+            enemy.style.left = Math.floor(Math.random()* 350) + "px"
+
+        }
+        enemy.y += player.speed 
+        enemy.style.top = `${enemy.y}px`
+    })
+}
+
+const isCollide = (a, b) => {
+    //create coordinates for car divs
+    let aRect = a.getBoundingClientRect()
+    let bRect = b.getBoundingClientRect()
+    
+    //check opposite side of each rectangle to check collision 
+    return !(
+        (aRect.bottom < bRect.top)||
+        (aRect.top > bRect.bottom)||
+        (aRect.right < bRect.left)||
+        (aRect.left > bRect.right)
+    )
+}
+
+const endGame = () => {
+    player.start = false
+    score.innerText = `Game Over! Score was ${player.score}`
+    startScreen.classList.remove("hide")
+
+}
+
