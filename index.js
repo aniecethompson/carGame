@@ -11,12 +11,9 @@ let keys = {
 
 let player = {
     speed:5,
-    score: 0
+    score: 0,
+    eCar: 0
 }
-
-startScreen.addEventListener("click", start)
-document.addEventListener("keydown", pressOn)
-document.addEventListener("keyup", pressOff)
 
 function playGame(){
     let car = document.querySelector(".car")
@@ -164,4 +161,8 @@ const endGame = () => {
     startScreen.classList.remove("hide")
 
 }
+
+startScreen.addEventListener("click", start)
+document.addEventListener("keydown", pressOn)
+document.addEventListener("keyup", pressOff)
 
